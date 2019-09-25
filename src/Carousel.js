@@ -33,14 +33,31 @@ class Carousel extends Component {
     }
   }
 
-  handleFocus = (index) => {
+  handleFocus = index => {
     this.setState({
       focused: index,
+    }, () => {
+      console.log('>>>>> #handleFocus', { focused: this.state.focused })
+      this.props.onFocus(this.state.focused)
     });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.focused === prevProps.focused) {
+      return
+    }
+
+    this.setState({
+      focused: this.props.focused,
+    }, () => {
+      console.log('>>>>> #handleFocus', { focused: this.state.focused })
+      this.props.onFocus(this.state.focused)
+    })
   }
 
   renderSlide = (slide, i) => {
     const { focused } = this.state;
+
     return React.cloneElement(slide, {
       focused: i === focused,
       onClick: () => this.handleFocus(i),
@@ -48,8 +65,8 @@ class Carousel extends Component {
   }
 
   render() {
-    const { classes, children } = this.props;
-    const { focused } = this.state;
+    const { classes, children, focused, onDotClick } = this.props;
+    // const { focused } = this.state;
 
     return (
       <div className={classes.root}>
@@ -71,7 +88,7 @@ class Carousel extends Component {
           <Dots
             index={focused}
             count={React.Children.count(children)}
-            onDotClick={this.handleFocus}
+            onDotClick={onDotClick}
           />
         </div>
       </div>
@@ -80,8 +97,10 @@ class Carousel extends Component {
 }
 
 Carousel.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+  classes:  PropTypes.shape({}).isRequired,
   children: PropTypes.node.isRequired,
+  onFocus:  PropTypes.func,
+  focusOn:  PropTypes.number,
 };
 
 const transition = (duration = 150) => `all ${duration}ms cubic-bezier(0.4, 0, 0.2, 1)`;
